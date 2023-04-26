@@ -53,7 +53,6 @@ const generateButtons = () => {
       <button 
         class="letter-btn"
         id='` + letter + `'
-        onClick="handleGuess('` + letter + `')"
       >
         ` + letter + `
       </button>
@@ -62,7 +61,7 @@ const generateButtons = () => {
 }
 
 // const handleTouch = () => {
-
+  // onClick="handleGuess('` + letter + `')"
 // }
 
 
