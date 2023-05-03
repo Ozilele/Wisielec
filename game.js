@@ -4,6 +4,7 @@ const wordToGuessText = document.querySelector(".wordToBeGuessed");
 const lettersBox = document.querySelector(".letters");
 const alertPopup = document.querySelector(".alert-box");
 const overlay = document.querySelector(".overlay");
+const wordInfo = document.querySelector(".g-word");
 const resetBtn = document.querySelector('.reset-game-btn');
 const newGameBtn = document.querySelector('.new-game-btn');
 const winCountSpan = document.querySelector('.win-count');
@@ -53,17 +54,13 @@ const generateButtons = () => {
       <button 
         class="letter-btn"
         id='` + letter + `'
+        onClick="handleGuess('` + letter + `')"
       >
         ` + letter + `
       </button>
   `).join('');
   lettersBox.innerHTML = lettersHTML;
 }
-
-// const handleTouch = () => {
-  // onClick="handleGuess('` + letter + `')"
-// }
-
 
 const handleGuess = (letter) => {
   const btn = document.getElementById(letter);
@@ -77,12 +74,12 @@ const touchEventFunc = function(id) {
   handleGuess(id);
 }
 
-const attachTouchListeners = () => {
-  document.querySelectorAll(".letter-btn").forEach((btn) => {
-    btn.addEventListener('touchend', () => touchEventFunc(btn.id));
-    // btn.removeEventListener('touchend', func);
-  });
-}
+// const attachTouchListeners = () => {
+//   document.querySelectorAll(".letter-btn").forEach((btn) => {
+//     btn.addEventListener('touchend', () => touchEventFunc(btn.id));
+//     // btn.removeEventListener('touchend', func);
+//   });
+// }
 
 const runGame = async () => {
   currTry = 0;
@@ -92,7 +89,6 @@ const runGame = async () => {
   await generateRandomWord();
   currWord = generateUnderscores()
   generateButtons();
-  attachTouchListeners();
   context.fillStyle = "#fff";
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.lineWidth = 3;
@@ -183,30 +179,33 @@ const drawHangman = () => {
 }
 
 const checkGameState = () => {
-  if(currTry == maxTries) {
+  if(currTry == maxTries) { // game is lost
     gamesLost++;
     val = localStorage.getItem("gamesLost") != null ? parseInt(localStorage.getItem("gamesLost")) + 1 : gamesLost;
     localStorage.setItem("gamesLost", val);
     alertPopup.classList.remove("hidden");
     overlay.classList.remove("hidden");
     alertPopup.querySelector('h2').innerHTML = "You lost the game 😟"
+    wordInfo.innerHTML = `${wordToGuess}`;
     alertPopup.querySelector(".info-score").querySelector('.lost-counter').innerHTML = `Games lost: ${val}`;
+    alertPopup.querySelector(".info-score").querySelector('.won-counter').innerHTML = `Games won: ${localStorage.getItem("gamesWon") != null ? localStorage.getItem("gamesWon") : gamesWon}`;
     runGame(); // start a new game
   }
-  if(currWord === wordToGuess) {
+  if(currWord === wordToGuess) { // game is won
     gamesWon++;
     newVal = localStorage.getItem("gamesWon") != null ? parseInt(localStorage.getItem("gamesWon")) + 1 : gamesWon;
     localStorage.setItem("gamesWon", newVal);
     alertPopup.classList.remove("hidden");
     overlay.classList.remove("hidden");
     alertPopup.querySelector('h2').innerHTML = "You won the game 😃"
+    wordInfo.innerHTML = `${wordToGuess}`;
+    alertPopup.querySelector(".info-score").querySelector('.lost-counter').innerHTML = `Games lost: ${localStorage.getItem("gamesLost") != null ? localStorage.getItem("gamesLost") : gamesLost}`;
     alertPopup.querySelector(".info-score").querySelector('.won-counter').innerHTML = `Games won: ${newVal}`;
     runGame(); // start a new game
   }
 }
 
 const updateGame = (letter) => {
-  console.log(currWord);
   if(wordToGuess.includes(letter)) {
     let index = 0;
     let indexesOfLetter = [];
@@ -216,7 +215,6 @@ const updateGame = (letter) => {
       }
       index++;
     }
-    console.log(indexesOfLetter);
     for(let ind of indexesOfLetter) {
       currWord = currWord.substring(0, ind) + letter + currWord.substring(ind + 1); 
     }
@@ -228,6 +226,8 @@ const updateGame = (letter) => {
 }
 
 resetBtn.addEventListener('click', () => {
+  localStorage.removeItem("gamesWon");
+  localStorage.removeItem("gamesLost");
   gamesLost = 0;
   gamesWon = 0;
   runGame();
